@@ -1236,8 +1236,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_modals__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/modals */ "./src/js/modules/modals.js");
 /* harmony import */ var _modules_forms__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/forms */ "./src/js/modules/forms.js");
 /* harmony import */ var _services_login__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./services/login */ "./src/js/services/login.js");
-/* harmony import */ var _modules_checkInputs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/checkInputs */ "./src/js/modules/checkInputs.js");
-
 
 
 
@@ -1256,50 +1254,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.querySelector('.button-out').addEventListener('click', () => Object(_services_login__WEBPACK_IMPORTED_MODULE_2__["logout"])(user));
   Object(_modules_modals__WEBPACK_IMPORTED_MODULE_0__["default"])('.button-auth', '.modal-auth', '.close-auth');
   Object(_modules_forms__WEBPACK_IMPORTED_MODULE_1__["default"])('#logInForm', user);
-  Object(_modules_checkInputs__WEBPACK_IMPORTED_MODULE_3__["default"])('#logInForm input', '.button-primary.button-login');
 });
-
-/***/ }),
-
-/***/ "./src/js/modules/checkInputs.js":
-/*!***************************************!*\
-  !*** ./src/js/modules/checkInputs.js ***!
-  \***************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.string.replace */ "./node_modules/core-js/modules/es.string.replace.js");
-/* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0__);
-
-
-const checkInputs = (inputsSelector, submitSelector) => {
-  const inputs = document.querySelectorAll(inputsSelector),
-        submitBtn = document.querySelector(submitSelector);
-  inputs.forEach(input => {
-    const warning = document.createElement('div');
-    warning.style.textAlign = 'center';
-    warning.style.color = 'red';
-    warning.style.fontSize = '10px';
-    input.insertAdjacentElement('afterend', warning);
-    input.addEventListener('input', function () {
-      this.value = this.value.replace(/[^a-z0-9\_]/ig, '');
-
-      if (input.value.length < 5) {
-        warning.style.marginTop = '10px';
-        warning.textContent = 'Не менее 5 символов';
-        submitBtn.disabled = true;
-      } else {
-        warning.style.marginTop = '0';
-        warning.textContent = '';
-        submitBtn.disabled = false;
-      }
-    });
-  });
-};
-
-/* harmony default export */ __webpack_exports__["default"] = (checkInputs);
 
 /***/ }),
 
@@ -1312,18 +1267,49 @@ const checkInputs = (inputsSelector, submitSelector) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _services_login__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../services/login */ "./src/js/services/login.js");
+/* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.string.replace */ "./node_modules/core-js/modules/es.string.replace.js");
+/* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _services_login__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../services/login */ "./src/js/services/login.js");
+
 
 
 const forms = (formSelector, obj) => {
-  const form = document.querySelector(formSelector);
+  const form = document.querySelector(formSelector),
+        inputs = form.querySelectorAll('input'),
+        warningArr = [];
+  inputs.forEach(input => {
+    const warning = document.createElement('div');
+    warning.style.textAlign = 'center';
+    warning.style.color = 'red';
+    warning.style.fontSize = '10px';
+    input.insertAdjacentElement('afterend', warning);
+    warningArr.push(warning);
+    input.addEventListener('input', function () {
+      this.value = this.value.replace(/[^a-z0-9\_]/ig, '');
+    });
+  });
   form.addEventListener('submit', e => {
     e.preventDefault();
-    const formData = new FormData(form);
-    formData.forEach((value, key) => obj[key] = value);
-    Object(_services_login__WEBPACK_IMPORTED_MODULE_0__["login"])(obj);
-    form.parentElement.parentElement.style.display = 'none';
-    form.reset();
+    let moreLetters = 0;
+    inputs.forEach((input, i) => {
+      if (input.value.length < 5) {
+        moreLetters = 1;
+        warningArr[i].style.marginTop = '10px';
+        warningArr[i].textContent = 'Не менее 5 символов';
+        setTimeout(function () {
+          warningArr[i].style.marginTop = '0';
+          warningArr[i].textContent = '';
+        }, 2000);
+      }
+    });
+
+    if (!moreLetters) {
+      const formData = new FormData(form);
+      formData.forEach((value, key) => obj[key] = value);
+      Object(_services_login__WEBPACK_IMPORTED_MODULE_1__["login"])(obj);
+      form.parentElement.parentElement.style.display = 'none';
+      form.reset();
+    }
   });
 };
 
