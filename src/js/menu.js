@@ -1,5 +1,5 @@
 import auth from './modules/auth';
-import partners from './modules/partners';
+import menu from './modules/menu';
 
 window.addEventListener('DOMContentLoaded', () => {
     'use strict';
@@ -7,5 +7,5 @@ window.addEventListener('DOMContentLoaded', () => {
     let user;
 
     auth(user);
-    partners();
+    menu();
 });

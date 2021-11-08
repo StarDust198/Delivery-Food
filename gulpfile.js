@@ -14,11 +14,15 @@ gulp.task("copy-html", () => {
 });
 
 gulp.task("build-js", () => {
-    return gulp.src("./src/js/main.js")
+    return gulp.src("./src/js/*.js")
                 .pipe(webpack({
+                    entry: {
+                      main: './src/js/main.js',
+                      menu: './src/js/menu.js'
+                    },
                     mode: 'development',
                     output: {
-                        filename: 'script.js'
+                      filename: '[name].js'
                     },
                     watch: false,
                     devtool: "source-map",
@@ -70,7 +74,7 @@ gulp.task("watch", () => {
 		notify: true
     });
     
-    gulp.watch("./src/index.html", gulp.parallel("copy-html"));
+    gulp.watch("./src/*.html", gulp.parallel("copy-html"));
     gulp.watch("./src/css/**/*.*", gulp.parallel("copy-css"));
     gulp.watch("./src/db/**/*.*", gulp.parallel("copy-db"));
     gulp.watch("./src/img/**/*.*", gulp.parallel("copy-img"));
@@ -80,11 +84,15 @@ gulp.task("watch", () => {
 gulp.task("build", gulp.parallel("copy-html", "copy-css", "copy-db", "copy-img", "build-js"));
 
 gulp.task("build-prod-js", () => {
-    return gulp.src("./src/js/main.js")
+    return gulp.src("./src/js/*.js")
                 .pipe(webpack({
+                    entry: {
+                      main: './src/js/main.js',
+                      menu: './src/js/menu.js'
+                    },
                     mode: 'production',
                     output: {
-                        filename: 'script.js'
+                      filename: '[name].js'
                     },
                     module: {
                         rules: [

@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/js/main.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/js/menu.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -1224,44 +1224,33 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "./src/js/main.js":
+/***/ "./src/js/menu.js":
 /*!************************!*\
-  !*** ./src/js/main.js ***!
+  !*** ./src/js/menu.js ***!
   \************************/
 /*! no exports provided */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _modules_modals__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/modals */ "./src/js/modules/modals.js");
-/* harmony import */ var _modules_forms__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/forms */ "./src/js/modules/forms.js");
-/* harmony import */ var _services_login__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./services/login */ "./src/js/services/login.js");
-
+/* harmony import */ var _modules_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/auth */ "./src/js/modules/auth.js");
+/* harmony import */ var _modules_menu__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/menu */ "./src/js/modules/menu.js");
 
 
 window.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
   let user;
-
-  if (localStorage.getItem('user')) {
-    user = JSON.parse(localStorage.getItem('user'));
-    Object(_services_login__WEBPACK_IMPORTED_MODULE_2__["login"])(user);
-  } else {
-    user = {};
-  }
-
-  document.querySelector('.button-out').addEventListener('click', () => Object(_services_login__WEBPACK_IMPORTED_MODULE_2__["logout"])(user));
-  Object(_modules_modals__WEBPACK_IMPORTED_MODULE_0__["default"])('.button-auth', '.modal-auth', '.close-auth');
-  Object(_modules_forms__WEBPACK_IMPORTED_MODULE_1__["default"])('#logInForm', user);
+  Object(_modules_auth__WEBPACK_IMPORTED_MODULE_0__["default"])(user);
+  Object(_modules_menu__WEBPACK_IMPORTED_MODULE_1__["default"])();
 });
 
 /***/ }),
 
-/***/ "./src/js/modules/forms.js":
-/*!*********************************!*\
-  !*** ./src/js/modules/forms.js ***!
-  \*********************************/
+/***/ "./src/js/modules/auth.js":
+/*!********************************!*\
+  !*** ./src/js/modules/auth.js ***!
+  \********************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1269,12 +1258,54 @@ window.addEventListener('DOMContentLoaded', () => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.string.replace */ "./node_modules/core-js/modules/es.string.replace.js");
 /* harmony import */ var core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_string_replace__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _services_login__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../services/login */ "./src/js/services/login.js");
 
 
+const auth = user => {
+  //login & logout
+  const loginElem = document.querySelector('.button-auth'),
+        logoutElem = document.querySelector('.button-out'),
+        usernameElem = document.querySelector('.user-name');
 
-const forms = (formSelector, obj) => {
-  const form = document.querySelector(formSelector),
+  const login = () => {
+    loginElem.style.display = 'none';
+    logoutElem.style.display = 'flex';
+    usernameElem.style.display = 'flex';
+    usernameElem.textContent = user.login;
+    localStorage.setItem('user', JSON.stringify(user));
+  };
+
+  const logout = () => {
+    loginElem.style.display = 'flex';
+    logoutElem.style.display = 'none';
+    usernameElem.style.display = 'none';
+    usernameElem.textContent = '';
+    localStorage.removeItem('user');
+  };
+
+  if (localStorage.getItem('user')) {
+    user = JSON.parse(localStorage.getItem('user'));
+    login(user);
+  } else {
+    user = {};
+  }
+
+  logoutElem.addEventListener('click', () => logout(user)); // auth modal
+
+  const btn = document.querySelector('.button-auth'),
+        modal = document.querySelector('.modal-auth'),
+        closeBtn = document.querySelector('.close-auth');
+  btn.addEventListener('click', function () {
+    modal.style.display = 'flex';
+  });
+  modal.addEventListener('click', function (e) {
+    let tgt = e.target;
+
+    if (tgt === closeBtn || tgt === modal) {
+      modal.style.display = 'none';
+    }
+  }); // auth form
+
+  const form = document.querySelector('#logInForm'),
         inputs = form.querySelectorAll('input'),
         warningArr = [];
   inputs.forEach(input => {
@@ -1305,83 +1336,44 @@ const forms = (formSelector, obj) => {
 
     if (!moreLetters) {
       const formData = new FormData(form);
-      formData.forEach((value, key) => obj[key] = value);
-      Object(_services_login__WEBPACK_IMPORTED_MODULE_1__["login"])(obj);
+      formData.forEach((value, key) => user[key] = value);
+      login(user);
       form.parentElement.parentElement.style.display = 'none';
       form.reset();
     }
   });
 };
 
-/* harmony default export */ __webpack_exports__["default"] = (forms);
+/* harmony default export */ __webpack_exports__["default"] = (auth);
 
 /***/ }),
 
-/***/ "./src/js/modules/modals.js":
-/*!**********************************!*\
-  !*** ./src/js/modules/modals.js ***!
-  \**********************************/
+/***/ "./src/js/modules/menu.js":
+/*!********************************!*\
+  !*** ./src/js/modules/menu.js ***!
+  \********************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-const modals = (triggerSelector, modalSelector, closeSelector) => {
-  const btn = document.querySelector(triggerSelector),
-        modal = document.querySelector(modalSelector),
-        closeBtn = document.querySelector(closeSelector);
-  btn.addEventListener('click', function () {
-    modal.style.display = 'flex';
-  });
-  modal.addEventListener('click', function (e) {
-    let tgt = e.target;
+const menu = () => {
+  const restaurant = 'food-band';
 
-    if (tgt === closeBtn || tgt === modal) {
-      modal.style.display = 'none';
-    }
+  const renderItems = data => {
+    console.log(data);
+  };
+
+  fetch(`https://test-5e265-default-rtdb.firebaseio.com/db/${restaurant}.json`).then(res => res.json()).then(data => {
+    renderItems(data);
+  }).catch(error => {
+    console.log(error);
   });
 };
 
-/* harmony default export */ __webpack_exports__["default"] = (modals);
-
-/***/ }),
-
-/***/ "./src/js/services/login.js":
-/*!**********************************!*\
-  !*** ./src/js/services/login.js ***!
-  \**********************************/
-/*! exports provided: login, logout */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "login", function() { return login; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "logout", function() { return logout; });
-const login = (user, loginSelector = '.button-auth', logoutSelector = '.button-out', usernameSelector = '.user-name') => {
-  const loginElem = document.querySelector(loginSelector),
-        logoutElem = document.querySelector(logoutSelector),
-        usernameElem = document.querySelector(usernameSelector);
-  loginElem.style.display = 'none';
-  logoutElem.style.display = 'flex';
-  usernameElem.style.display = 'flex';
-  usernameElem.textContent = user.login;
-  localStorage.setItem('user', JSON.stringify(user));
-};
-
-const logout = (user, loginSelector = '.button-auth', logoutSelector = '.button-out', usernameSelector = '.user-name') => {
-  const loginElem = document.querySelector(loginSelector),
-        logoutElem = document.querySelector(logoutSelector),
-        usernameElem = document.querySelector(usernameSelector);
-  loginElem.style.display = 'flex';
-  logoutElem.style.display = 'none';
-  usernameElem.style.display = 'none';
-  usernameElem.textContent = '';
-  localStorage.removeItem('user');
-};
-
-
+/* harmony default export */ __webpack_exports__["default"] = (menu);
 
 /***/ })
 
 /******/ });
-//# sourceMappingURL=script.js.map
+//# sourceMappingURL=menu.js.map
