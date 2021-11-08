@@ -21,13 +21,11 @@ const auth = (user) => {
         usernameElem.textContent = '';
 
         localStorage.removeItem('user');
+        user.login = '';
     };
 
-    if (localStorage.getItem('user')) {
-        user = JSON.parse(localStorage.getItem('user'));
-        login(user);
-    } else {
-        user = {};
+    if (localStorage.getItem('user')) {        
+        login();
     }
 
     logoutElem.addEventListener('click', () => logout(user));
@@ -87,7 +85,7 @@ const auth = (user) => {
             const formData = new FormData(form);
             formData.forEach((value, key) => user[key] = value);
 
-            login(user);
+            login();
 
             form.parentElement.parentElement.style.display = 'none';
             form.reset();

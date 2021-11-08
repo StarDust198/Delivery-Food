@@ -1,4 +1,4 @@
-const partners = () => {
+const partners = (user) => {
     const cardsRestaurants = document.querySelector('.cards-restaurants');
 
     const renderItems = (data) => {
@@ -30,9 +30,13 @@ const partners = () => {
             a.addEventListener('click', (e) => {
                 e.preventDefault();
 
-                localStorage.setItem('restaurant', JSON.stringify(item));
+                if (user.login) {
+                    localStorage.setItem('restaurant', JSON.stringify(item));
 
-                window.location.href = '/restaurant.html';
+                    window.location.href = '/restaurant.html';
+                } else {
+                    document.querySelector('.button-auth').click();
+                }
             });
 
             cardsRestaurants.append(a);

@@ -1240,9 +1240,9 @@ __webpack_require__.r(__webpack_exports__);
 window.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
-  let user;
+  let user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : {};
   Object(_modules_auth__WEBPACK_IMPORTED_MODULE_0__["default"])(user);
-  Object(_modules_menu__WEBPACK_IMPORTED_MODULE_1__["default"])();
+  Object(_modules_menu__WEBPACK_IMPORTED_MODULE_1__["default"])(user);
 });
 
 /***/ }),
@@ -1280,13 +1280,11 @@ const auth = user => {
     usernameElem.style.display = 'none';
     usernameElem.textContent = '';
     localStorage.removeItem('user');
+    user.login = '';
   };
 
   if (localStorage.getItem('user')) {
-    user = JSON.parse(localStorage.getItem('user'));
-    login(user);
-  } else {
-    user = {};
+    login();
   }
 
   logoutElem.addEventListener('click', () => logout(user)); // auth modal
@@ -1337,7 +1335,7 @@ const auth = user => {
     if (!moreLetters) {
       const formData = new FormData(form);
       formData.forEach((value, key) => user[key] = value);
-      login(user);
+      login();
       form.parentElement.parentElement.style.display = 'none';
       form.reset();
     }
