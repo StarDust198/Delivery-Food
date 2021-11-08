@@ -1235,6 +1235,8 @@ module.exports = g;
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_auth__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/auth */ "./src/js/modules/auth.js");
 /* harmony import */ var _modules_menu__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/menu */ "./src/js/modules/menu.js");
+/* harmony import */ var _modules_cart__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/cart */ "./src/js/modules/cart.js");
+
 
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -1243,6 +1245,7 @@ window.addEventListener('DOMContentLoaded', () => {
   let user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : {};
   Object(_modules_auth__WEBPACK_IMPORTED_MODULE_0__["default"])(user);
   Object(_modules_menu__WEBPACK_IMPORTED_MODULE_1__["default"])(user);
+  Object(_modules_cart__WEBPACK_IMPORTED_MODULE_2__["default"])();
 });
 
 /***/ }),
@@ -1264,13 +1267,15 @@ const auth = user => {
   //login & logout
   const loginElem = document.querySelector('.button-auth'),
         logoutElem = document.querySelector('.button-out'),
-        usernameElem = document.querySelector('.user-name');
+        usernameElem = document.querySelector('.user-name'),
+        buttonCart = document.getElementById('cart-button');
 
   const login = () => {
     loginElem.style.display = 'none';
     logoutElem.style.display = 'flex';
     usernameElem.style.display = 'flex';
     usernameElem.textContent = user.login;
+    buttonCart.style.display = 'flex';
     localStorage.setItem('user', JSON.stringify(user));
   };
 
@@ -1279,6 +1284,7 @@ const auth = user => {
     logoutElem.style.display = 'none';
     usernameElem.style.display = 'none';
     usernameElem.textContent = '';
+    buttonCart.style.display = 'none';
     localStorage.removeItem('user');
     user.login = '';
   };
@@ -1346,6 +1352,121 @@ const auth = user => {
 
 /***/ }),
 
+/***/ "./src/js/modules/cart.js":
+/*!********************************!*\
+  !*** ./src/js/modules/cart.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+const cart = () => {
+  const buttonCart = document.getElementById('cart-button'),
+        modalCart = document.querySelector('.modal-cart'),
+        closeBtn = modalCart.querySelector('.close'),
+        cartList = modalCart.querySelector('.modal-body'),
+        cartPrice = modalCart.querySelector('.modal-pricetag'),
+        cartOrder = modalCart.querySelector('.button-primary'),
+        cartClear = modalCart.querySelector('.clear-cart');
+
+  const resetCart = () => {
+    cartList.innerHTML = '';
+    localStorage.removeItem('cart');
+    modalCart.classList.remove('is-open');
+    cartPrice.textContent = '0 ₽';
+  };
+
+  const decCount = id => {
+    const cartArray = JSON.parse(localStorage.getItem('cart'));
+    cartArray.map(item => {
+      if (item.id === id) {
+        item.count = item.count > 0 ? item.count - 1 : 0;
+      }
+
+      return item;
+    });
+    localStorage.setItem('cart', JSON.stringify(cartArray));
+    renderItems(cartArray);
+  };
+
+  const incCount = id => {
+    const cartArray = JSON.parse(localStorage.getItem('cart'));
+    cartArray.map(item => {
+      if (item.id === id) {
+        item.count++;
+      }
+
+      return item;
+    });
+    localStorage.setItem('cart', JSON.stringify(cartArray));
+    renderItems(cartArray);
+  };
+
+  const renderItems = data => {
+    cartList.innerHTML = '';
+    data.forEach(({
+      name,
+      price,
+      id,
+      count
+    }) => {
+      const cartElem = document.createElement('div');
+      cartElem.classList.add('food-row');
+      cartElem.innerHTML = `
+                <span class="food-name">${name}</span>
+                <strong class="food-price">${price} ₽</strong>
+                <div class="food-counter">
+                    <button class="counter-button btn-dec" data-index="${id}">-</button>
+                    <span class="counter">${count}</span>
+                    <button class="counter-button btn-inc" data-index="${id}">+</button>
+                </div>
+            `;
+      cartList.append(cartElem);
+    });
+    const price = data.reduce((sum, current) => sum + current.price * current.count, 0);
+    cartPrice.textContent = `${price} ₽`;
+  };
+
+  cartList.addEventListener('click', e => {
+    e.preventDefault();
+
+    if (e.target.classList.contains('btn-inc')) {
+      incCount(e.target.dataset.index);
+    } else if (e.target.classList.contains('btn-dec')) {
+      decCount(e.target.dataset.index);
+    }
+  });
+  cartOrder.addEventListener('click', () => {
+    const cartArray = localStorage.getItem('cart');
+    fetch('https://jsonplaceholder.typicode.com/posts', {
+      method: 'POST',
+      body: cartArray
+    }).then(res => {
+      if (res.ok) {
+        resetCart();
+      }
+    }).catch(e => {
+      console.error(e);
+    });
+  });
+  buttonCart.addEventListener('click', () => {
+    if (localStorage.getItem('cart')) {
+      renderItems(JSON.parse(localStorage.getItem('cart')));
+    }
+
+    modalCart.classList.add('is-open');
+  });
+  closeBtn.addEventListener('click', () => {
+    modalCart.classList.remove('is-open');
+  });
+  cartClear.addEventListener('click', resetCart);
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (cart);
+
+/***/ }),
+
 /***/ "./src/js/modules/menu.js":
 /*!********************************!*\
   !*** ./src/js/modules/menu.js ***!
@@ -1370,6 +1491,24 @@ const menu = () => {
     category.textContent = restaurant.kitchen;
   };
 
+  const addToCart = cartItem => {
+    const cartArray = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [];
+
+    if (cartArray.some(item => item.id === cartItem.id)) {
+      cartArray.map(item => {
+        if (item.id === cartItem.id) {
+          item.count++;
+        }
+
+        return item;
+      });
+    } else {
+      cartArray.push(cartItem);
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cartArray));
+  };
+
   const renderItems = data => {
     data.forEach(({
       description,
@@ -1378,10 +1517,10 @@ const menu = () => {
       name,
       price
     }) => {
-      const div = document.createElement('div');
-      div.classList.add('card');
-      div.dataset.id = id;
-      div.innerHTML = `
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.dataset.id = id;
+      card.innerHTML = `
                 <img src="${image}" alt="image" class="card-image" />
                 <div class="card-text">
                     <div class="card-heading">
@@ -1400,7 +1539,15 @@ const menu = () => {
                     </div>
                 </div>
             `;
-      cardsMenu.append(div);
+      card.querySelector('.button-add-cart').addEventListener('click', () => {
+        addToCart({
+          name,
+          price,
+          id,
+          count: 1
+        });
+      });
+      cardsMenu.append(card);
     });
   };
 
@@ -1409,8 +1556,8 @@ const menu = () => {
     changeTitle(restaurant);
     fetch(`https://test-5e265-default-rtdb.firebaseio.com/db/${restaurant.products}`).then(res => res.json()).then(data => {
       renderItems(data);
-    }).catch(error => {
-      console.log(error);
+    }).catch(e => {
+      console.error(e);
     });
   } else {
     window.location.href = '/';

@@ -14,14 +14,32 @@ const menu = () => {
         category.textContent = restaurant.kitchen;
     };
 
+    const addToCart = (cartItem) => {
+        const cartArray = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : [];
+
+        if (cartArray.some(item => item.id === cartItem.id)) {
+            cartArray.map(item => {
+                if (item.id === cartItem.id) {
+                    item.count++;
+                }
+
+                return item;
+            });
+        } else {
+            cartArray.push(cartItem);
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cartArray));
+    };
+
     const renderItems = (data) => {
         data.forEach(({ description, id, image, name, price }) => {
-            const div = document.createElement('div');
+            const card = document.createElement('div');
 
-            div.classList.add('card');
-            div.dataset.id = id;
+            card.classList.add('card');
+            card.dataset.id = id;
 
-            div.innerHTML = `
+            card.innerHTML = `
                 <img src="${image}" alt="image" class="card-image" />
                 <div class="card-text">
                     <div class="card-heading">
@@ -41,7 +59,11 @@ const menu = () => {
                 </div>
             `;
 
-            cardsMenu.append(div);
+            card.querySelector('.button-add-cart').addEventListener('click', () => {
+                addToCart({ name, price, id, count: 1 });
+            });            
+
+            cardsMenu.append(card);
         });
     };
 
@@ -55,8 +77,8 @@ const menu = () => {
             .then(data => {
                 renderItems(data);
             })
-            .catch(error => {
-                console.log(error);
+            .catch(e => {
+                console.error(e);
             });
     } else {
         window.location.href = '/';

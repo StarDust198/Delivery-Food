@@ -3,13 +3,15 @@ const auth = (user) => {
     //login & logout
     const loginElem = document.querySelector('.button-auth'),
           logoutElem = document.querySelector('.button-out'),
-          usernameElem = document.querySelector('.user-name');
+          usernameElem = document.querySelector('.user-name'),
+          buttonCart = document.getElementById('cart-button');
 
     const login = () => {        
         loginElem.style.display = 'none';
         logoutElem.style.display = 'flex';
         usernameElem.style.display = 'flex';
         usernameElem.textContent = user.login;
+        buttonCart.style.display = 'flex';
 
         localStorage.setItem('user', JSON.stringify(user));
     };
@@ -19,6 +21,7 @@ const auth = (user) => {
         logoutElem.style.display = 'none';
         usernameElem.style.display = 'none';
         usernameElem.textContent = '';
+        buttonCart.style.display = 'none';
 
         localStorage.removeItem('user');
         user.login = '';

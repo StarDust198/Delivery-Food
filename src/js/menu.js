@@ -1,5 +1,6 @@
 import auth from './modules/auth';
 import menu from './modules/menu';
+import cart from './modules/cart';
 
 window.addEventListener('DOMContentLoaded', () => {
     'use strict';
@@ -8,4 +9,5 @@ window.addEventListener('DOMContentLoaded', () => {
 
     auth(user);
     menu(user);
+    cart();
 });
